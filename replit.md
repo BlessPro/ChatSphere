@@ -2,6 +2,8 @@
 
 This is a browser-based real-time chat application built with React, Express.js, and PostgreSQL. The application allows users to create and join chat rooms, send messages and files, and receive real-time updates. It features user authentication via Replit Auth, a modern UI built with shadcn/ui components, and a clean architectural separation between frontend and backend.
 
+**Status**: Fully deployed and operational as of August 18, 2025. Users can successfully authenticate, create/join chat rooms, send text messages and file attachments, with real-time message polling working smoothly.
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
