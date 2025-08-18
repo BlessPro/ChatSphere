@@ -1,0 +1,35 @@
+I want you to build a browser-based real-time chat application. 
+
+Requirements:
+- Users sign up with a name/profile.
+- A user can create a chat room, which generates a unique chat ID and shareable link.
+- Other users can join a chat either by clicking the link or by entering the chat ID manually.
+- If the link is shared with one person, it acts as a 1-to-1 private chat. If shared with multiple, it becomes a group chat (one-to-many or many-to-many).
+- Inside a chat, users can send text messages, images, videos, and files.
+- Notifications: signed-up users should receive push notifications for new messages in any of their chats, even if the chat isn’t currently open.
+- Each chat has its own unique ID and is isolated from other chats.
+
+Build instructions:
+1. Generate the **frontend UI** (clean, minimal chat interface) with:
+   - Chat creation form
+   - Join chat form (paste chat ID)
+   - Messaging area (messages, input, file upload, media preview)
+   - Notifications integration
+2. Implement **real-time communication** using WebRTC DataChannels (for peer-to-peer messaging and file transfer) with WebSockets or Firebase as the signaling layer.
+3. Add **backend logic** for:
+   - User signup/login
+   - Generating unique chat IDs
+   - Managing signaling between peers
+   - Push notification handling
+4. Provide a **step-by-step build plan** including folder structure, key components, and technologies (e.g., React/Tailwind for frontend, Node.js/Express for backend, Firebase or custom WebSocket server for signaling).
+5. Include a working **MVP flow**:
+   - User creates chat → gets ID/link
+   - Another user joins via link or ID
+   - Both users exchange messages/files in real time
+   - Notifications trigger on new messages
+6. Suggest optional improvements for scalability, persistence (storing chat history), and security.
+
+Deliverables:
+- Full code structure (frontend + backend)
+- Step-by-step setup instructions
+- Example code snippets where possible
