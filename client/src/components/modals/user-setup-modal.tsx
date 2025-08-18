@@ -63,7 +63,7 @@ export default function UserSetupModal({ onClose, onComplete }: UserSetupModalPr
 
   return (
     <Dialog open onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" hideClose data-testid="modal-user-setup">
+      <DialogContent className="sm:max-w-md" data-testid="modal-user-setup">
         <DialogHeader>
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">

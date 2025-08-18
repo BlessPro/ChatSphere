@@ -58,6 +58,8 @@ export class MemStorage implements IStorage {
       ...existingUser,
       ...userData,
       id: userData.id || randomUUID(),
+      displayName: userData.displayName || null,
+      profileColor: userData.profileColor || 'blue',
       createdAt: existingUser?.createdAt || new Date(),
       updatedAt: new Date(),
     };
@@ -70,7 +72,9 @@ export class MemStorage implements IStorage {
     const id = this.generateChatId();
     const newChatRoom: ChatRoom = {
       id,
-      ...chatRoom,
+      name: chatRoom.name,
+      description: chatRoom.description || null,
+      isPrivate: chatRoom.isPrivate || false,
       createdBy,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -151,7 +155,11 @@ export class MemStorage implements IStorage {
       id,
       chatRoomId,
       senderId,
-      ...message,
+      content: message.content || null,
+      messageType: message.messageType || 'text',
+      fileName: message.fileName || null,
+      fileUrl: message.fileUrl || null,
+      fileSize: message.fileSize || null,
       createdAt: new Date(),
     };
     this.messages.set(id, newMessage);

@@ -141,7 +141,7 @@ export default function MessageList({ chatId }: MessageListProps) {
                           <Button
                             size="sm"
                             variant={isOwn ? "secondary" : "ghost"}
-                            onClick={() => window.open(message.fileUrl, '_blank')}
+                            onClick={() => window.open(message.fileUrl!, '_blank')}
                             className="p-1"
                             data-testid={`button-download-${message.id}`}
                           >
@@ -157,7 +157,7 @@ export default function MessageList({ chatId }: MessageListProps) {
                           </p>
                         )}
                         <img
-                          src={message.fileUrl}
+                          src={message.fileUrl!}
                           alt={message.fileName || "Shared image"}
                           className="rounded-lg w-full h-auto max-w-md border border-indigo-400"
                           data-testid={`image-${message.id}`}

@@ -31,7 +31,7 @@ export default function Home() {
 
   // Show user setup modal if profile is incomplete
   useEffect(() => {
-    if (user && !user.displayName) {
+    if (user && !user?.displayName) {
       setShowUserSetup(true);
     }
   }, [user]);

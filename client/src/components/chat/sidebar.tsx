@@ -162,7 +162,7 @@ export default function Sidebar({ selectedChatId, onSelectChat, onCreateChat, on
                     <div className="flex flex-col items-end space-y-1">
                       {room.lastMessage && (
                         <span className="text-xs text-gray-500">
-                          {formatTime(room.lastMessage.createdAt)}
+                          {formatTime(room.lastMessage.createdAt!)}
                         </span>
                       )}
                       {room.unreadCount > 0 && (
