@@ -178,6 +178,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Typing indicator routes
+  app.post('/api/chat-rooms/:id/typing', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const chatRoomId = req.params.id;
+      
+      // Check if user is member of the chat room
+      const isMember = await storage.isMemberOfChatRoom(chatRoomId, userId);
+      if (!isMember) {
+        return res.status(403).json({ message: "Access denied. You are not a member of this chat room." });
+      }
+      
+      await storage.setTypingIndicator(chatRoomId, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error setting typing indicator:", error);
+      res.status(500).json({ message: "Failed to set typing indicator" });
+    }
+  });
+
+  app.delete('/api/chat-rooms/:id/typing', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const chatRoomId = req.params.id;
+      
+      await storage.clearTypingIndicator(chatRoomId, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error clearing typing indicator:", error);
+      res.status(500).json({ message: "Failed to clear typing indicator" });
+    }
+  });
+
+  app.get('/api/chat-rooms/:id/typing', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const chatRoomId = req.params.id;
+      
+      // Check if user is member of the chat room
+      const isMember = await storage.isMemberOfChatRoom(chatRoomId, userId);
+      if (!isMember) {
+        return res.status(403).json({ message: "Access denied. You are not a member of this chat room." });
+      }
+      
+      const indicators = await storage.getTypingIndicators(chatRoomId);
+      // Filter out the current user from typing indicators
+      const filteredIndicators = indicators.filter(indicator => indicator.userId !== userId);
+      res.json(filteredIndicators);
+    } catch (error) {
+      console.error("Error fetching typing indicators:", error);
+      res.status(500).json({ message: "Failed to fetch typing indicators" });
+    }
+  });
+
   // File upload route
   app.post('/api/upload', isAuthenticated, upload.single('file'), async (req: any, res) => {
     try {
@@ -209,6 +263,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(404).json({ message: "File not found" });
     }
   });
+
+  // Background cleanup for expired messages
+  const cleanupExpiredMessages = async () => {
+    try {
+      await storage.cleanupExpiredMessages();
+    } catch (error) {
+      console.error("Error cleaning up expired messages:", error);
+    }
+  };
+
+  // Run cleanup every hour
+  setInterval(cleanupExpiredMessages, 60 * 60 * 1000);
+  
+  // Run initial cleanup
+  cleanupExpiredMessages();
 
   const httpServer = createServer(app);
   return httpServer;

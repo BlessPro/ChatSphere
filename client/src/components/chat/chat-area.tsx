@@ -1,10 +1,11 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Menu, Share2, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MessageList from "./message-list";
 import MessageInput from "./message-input";
-import type { ChatRoom } from "@shared/schema";
+import type { ChatRoom, MessageWithSender } from "@shared/schema";
 
 interface ChatAreaProps {
   chatId: string | null;
@@ -13,6 +14,7 @@ interface ChatAreaProps {
 
 export default function ChatArea({ chatId, onToggleSidebar }: ChatAreaProps) {
   const { toast } = useToast();
+  const [replyTo, setReplyTo] = useState<MessageWithSender | null>(null);
 
   const { data: chatRoom } = useQuery<ChatRoom>({
     queryKey: ["/api/chat-rooms", chatId],
@@ -105,11 +107,15 @@ export default function ChatArea({ chatId, onToggleSidebar }: ChatAreaProps) {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-hidden">
-        <MessageList chatId={chatId} />
+        <MessageList chatId={chatId} onReply={setReplyTo} />
       </div>
 
       {/* Message Input */}
-      <MessageInput chatId={chatId} />
+      <MessageInput 
+        chatId={chatId}
+        replyTo={replyTo}
+        onCancelReply={() => setReplyTo(null)}
+      />
     </div>
   );
 }

@@ -66,7 +66,19 @@ export const messages = pgTable("messages", {
   fileName: varchar("file_name"),
   fileUrl: varchar("file_url"),
   fileSize: varchar("file_size"),
+  // Thread support - using string reference to avoid circular dependency
+  replyToId: varchar("reply_to_id"),
+  // Auto-deletion support (24hr disappearing messages)
+  expiresAt: timestamp("expires_at").default(sql`NOW() + INTERVAL '24 hours'`),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Typing indicators table
+export const typingIndicators = pgTable("typing_indicators", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatRoomId: varchar("chat_room_id").notNull().references(() => chatRooms.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Insert schemas
@@ -91,6 +103,11 @@ export const insertMessageSchema = createInsertSchema(messages).pick({
   fileName: true,
   fileUrl: true,
   fileSize: true,
+  replyToId: true,
+});
+
+export const insertTypingIndicatorSchema = createInsertSchema(typingIndicators).pick({
+  chatRoomId: true,
 });
 
 // Types
@@ -101,6 +118,8 @@ export type ChatRoom = typeof chatRooms.$inferSelect;
 export type ChatRoomMember = typeof chatRoomMembers.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
+export type InsertTypingIndicator = z.infer<typeof insertTypingIndicatorSchema>;
+export type TypingIndicator = typeof typingIndicators.$inferSelect;
 
 // Extended types with relations
 export type ChatRoomWithMembers = ChatRoom & {
@@ -111,4 +130,9 @@ export type ChatRoomWithMembers = ChatRoom & {
 
 export type MessageWithSender = Message & {
   sender: User;
+  replyTo?: MessageWithSender;
+};
+
+export type TypingIndicatorWithUser = TypingIndicator & {
+  user: User;
 };
