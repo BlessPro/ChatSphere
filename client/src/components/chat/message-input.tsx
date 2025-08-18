@@ -134,14 +134,14 @@ export default function MessageInput({ chatId }: MessageInputProps) {
   };
 
   return (
-    <div className="bg-white border-t border-gray-200 p-4">
-      <div className="flex items-end space-x-3">
+    <div className="bg-card border-t border-border p-6">
+      <div className="flex items-end space-x-4">
         {/* File upload button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
-          className="text-gray-400 hover:text-gray-600 p-2"
+          className="text-muted-foreground hover:text-card-foreground p-3 rounded-lg"
           disabled={uploadFileMutation.isPending}
           data-testid="button-attach-file"
         >
@@ -166,20 +166,20 @@ export default function MessageInput({ chatId }: MessageInputProps) {
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
-            className="resize-none min-h-[44px] max-h-[120px]"
+            className="resize-none min-h-[48px] max-h-[120px] border-input bg-background text-foreground rounded-lg"
             data-testid="input-message"
           />
           
           {/* File preview area */}
           {selectedFiles.length > 0 && (
-            <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-900">Files to send:</span>
+            <div className="mt-3 p-4 bg-muted rounded-lg border border-border">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-card-foreground">Files to send:</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedFiles([])}
-                  className="text-gray-400 hover:text-gray-600 p-1"
+                  className="text-muted-foreground hover:text-card-foreground p-2"
                   data-testid="button-clear-files"
                 >
                   <X className="w-4 h-4" />
@@ -187,21 +187,21 @@ export default function MessageInput({ chatId }: MessageInputProps) {
               </div>
               <div className="space-y-2">
                 {selectedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <div className="flex items-center space-x-2 flex-1 min-w-0">
-                      <div className="w-8 h-8 bg-indigo-100 rounded flex items-center justify-center">
-                        <Paperclip className="w-4 h-4 text-indigo-600" />
+                  <div key={index} className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Paperclip className="w-5 h-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{file.fileName}</p>
-                        <p className="text-xs text-gray-500">{formatFileSize(file.fileSize)}</p>
+                        <p className="text-sm font-medium text-card-foreground truncate">{file.fileName}</p>
+                        <p className="text-xs text-muted-foreground">{formatFileSize(file.fileSize)}</p>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => removeFile(index)}
-                      className="text-gray-400 hover:text-gray-600 p-1"
+                      className="text-muted-foreground hover:text-card-foreground p-2"
                       data-testid={`button-remove-file-${index}`}
                     >
                       <X className="w-4 h-4" />
@@ -217,7 +217,7 @@ export default function MessageInput({ chatId }: MessageInputProps) {
         <Button
           onClick={handleSendMessage}
           disabled={(!message.trim() && selectedFiles.length === 0) || sendMessageMutation.isPending}
-          className="bg-primary hover:bg-indigo-700 p-3"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-lg h-12 min-w-12"
           data-testid="button-send"
         >
           <Send className="w-5 h-5" />
@@ -225,15 +225,15 @@ export default function MessageInput({ chatId }: MessageInputProps) {
       </div>
 
       {/* Quick emoji reactions */}
-      <div className="flex items-center space-x-1 mt-2">
-        <button onClick={() => addEmoji('👍')} className="text-gray-400 hover:text-gray-600 p-1 rounded text-lg" data-testid="button-emoji-thumbs-up">👍</button>
-        <button onClick={() => addEmoji('❤️')} className="text-gray-400 hover:text-gray-600 p-1 rounded text-lg" data-testid="button-emoji-heart">❤️</button>
-        <button onClick={() => addEmoji('😊')} className="text-gray-400 hover:text-gray-600 p-1 rounded text-lg" data-testid="button-emoji-smile">😊</button>
-        <button onClick={() => addEmoji('🎉')} className="text-gray-400 hover:text-gray-600 p-1 rounded text-lg" data-testid="button-emoji-party">🎉</button>
+      <div className="flex items-center space-x-2 mt-4">
+        <button onClick={() => addEmoji('👍')} className="text-muted-foreground hover:text-card-foreground p-2 rounded-lg text-lg transition-colors" data-testid="button-emoji-thumbs-up">👍</button>
+        <button onClick={() => addEmoji('❤️')} className="text-muted-foreground hover:text-card-foreground p-2 rounded-lg text-lg transition-colors" data-testid="button-emoji-heart">❤️</button>
+        <button onClick={() => addEmoji('😊')} className="text-muted-foreground hover:text-card-foreground p-2 rounded-lg text-lg transition-colors" data-testid="button-emoji-smile">😊</button>
+        <button onClick={() => addEmoji('🎉')} className="text-muted-foreground hover:text-card-foreground p-2 rounded-lg text-lg transition-colors" data-testid="button-emoji-party">🎉</button>
         <Button
           variant="ghost"
           size="sm"
-          className="text-gray-400 hover:text-gray-600 p-1"
+          className="text-muted-foreground hover:text-card-foreground p-2"
           data-testid="button-emoji-picker"
         >
           <Smile className="w-4 h-4" />

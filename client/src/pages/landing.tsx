@@ -4,64 +4,64 @@ import { MessageCircle, Users, Share2, Shield } from "lucide-react";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center">
-              <MessageCircle className="w-8 h-8" />
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="max-w-5xl w-full">
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center mb-8">
+            <div className="w-20 h-20 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg">
+              <MessageCircle className="w-10 h-10" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to ChatConnect
+          <h1 className="text-5xl font-bold text-foreground mb-6">
+            Welcome to ChatSphere
           </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Real-time chat rooms for teams and communities
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+            Seamless real-time communication with instant chat rooms, file sharing, and modern design
           </p>
           <Button
             size="lg"
             onClick={() => window.location.href = "/api/login"}
-            className="bg-primary hover:bg-indigo-700"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-medium rounded-lg"
             data-testid="button-login"
           >
             Get Started
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Users className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Create Rooms</h3>
-              <p className="text-gray-600">
-                Create chat rooms instantly with unique IDs and shareable links
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <Card className="border-border bg-card">
+            <CardContent className="p-8 text-center">
+              <Users className="w-14 h-14 text-primary mx-auto mb-6" />
+              <h3 className="text-xl font-bold mb-4 text-card-foreground">Create Rooms</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Create chat rooms instantly with unique IDs and shareable links for seamless collaboration
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Share2 className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Share & Join</h3>
-              <p className="text-gray-600">
-                Join conversations with a simple chat ID or invitation link
+          <Card className="border-border bg-card">
+            <CardContent className="p-8 text-center">
+              <Share2 className="w-14 h-14 text-primary mx-auto mb-6" />
+              <h3 className="text-xl font-bold mb-4 text-card-foreground">Share & Join</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Join conversations effortlessly with a simple chat ID or invitation link
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Shield className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Secure & Private</h3>
-              <p className="text-gray-600">
-                Your conversations are private and secure with room-based isolation
+          <Card className="border-border bg-card">
+            <CardContent className="p-8 text-center">
+              <Shield className="w-14 h-14 text-primary mx-auto mb-6" />
+              <h3 className="text-xl font-bold mb-4 text-card-foreground">Secure & Private</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Your conversations remain private and secure with room-based isolation
               </p>
             </CardContent>
           </Card>
         </div>
 
         <div className="text-center">
-          <p className="text-gray-500 text-sm">
+          <p className="text-muted-foreground">
             Sign in to start creating and joining chat rooms
           </p>
         </div>

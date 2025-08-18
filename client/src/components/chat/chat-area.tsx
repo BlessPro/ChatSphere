@@ -39,13 +39,13 @@ export default function ChatArea({ chatId, onToggleSidebar }: ChatAreaProps) {
 
   if (!chatId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Menu className="w-8 h-8 text-gray-400" />
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="text-center p-12">
+          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+            <Menu className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No chat selected</h3>
-          <p className="text-gray-500">Choose a chat room from the sidebar or create a new one</p>
+          <h3 className="text-2xl font-bold text-foreground mb-3">No chat selected</h3>
+          <p className="text-muted-foreground text-lg">Choose a chat room from the sidebar or create a new one</p>
         </div>
       </div>
     );
@@ -54,25 +54,29 @@ export default function ChatArea({ chatId, onToggleSidebar }: ChatAreaProps) {
   return (
     <div className="flex-1 flex flex-col">
       {/* Chat Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
+      <div className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={onToggleSidebar}
-            className="md:hidden"
+            className="md:hidden p-2"
             data-testid="button-toggle-sidebar"
           >
             <Menu className="w-5 h-5" />
           </Button>
           
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-semibold text-gray-900" data-testid="text-chat-name">
+            <h1 className="text-xl font-bold text-card-foreground" data-testid="text-chat-name">
               {chatRoom?.name || chatId}
             </h1>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500" data-testid="text-chat-id">
-                Chat ID: {chatId}
+            <div className="flex items-center space-x-3 mt-1">
+              <span className="text-sm text-muted-foreground font-mono" data-testid="text-chat-id">
+                ID: {chatId}
+              </span>
+              <div className="w-1 h-1 bg-muted-foreground/50 rounded-full"></div>
+              <span className="text-sm text-muted-foreground">
+                Active now
               </span>
             </div>
           </div>
@@ -83,7 +87,7 @@ export default function ChatArea({ chatId, onToggleSidebar }: ChatAreaProps) {
             variant="ghost"
             size="sm"
             onClick={handleShareChat}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-muted-foreground hover:text-card-foreground p-2"
             data-testid="button-share-chat"
           >
             <Share2 className="w-5 h-5" />
@@ -91,7 +95,7 @@ export default function ChatArea({ chatId, onToggleSidebar }: ChatAreaProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="text-gray-400 hover:text-gray-600"
+            className="text-muted-foreground hover:text-card-foreground p-2"
             data-testid="button-chat-info"
           >
             <Info className="w-5 h-5" />
