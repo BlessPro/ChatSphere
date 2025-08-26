@@ -1,13 +1,16 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Paperclip, Send, X, Smile } from "lucide-react";
+import { Paperclip, Send, X, Smile, Reply } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import type { MessageWithSender } from "@shared/schema";
 
 interface MessageInputProps {
   chatId: string;
+  replyTo?: MessageWithSender;
+  onCancelReply?: () => void;
 }
 
 interface FileInfo {
@@ -17,11 +20,13 @@ interface FileInfo {
   mimeType: string;
 }
 
-export default function MessageInput({ chatId }: MessageInputProps) {
+export default function MessageInput({ chatId, replyTo, onCancelReply }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -35,12 +40,13 @@ export default function MessageInput({ chatId }: MessageInputProps) {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: async (data: { content?: string; messageType?: string; fileName?: string; fileUrl?: string; fileSize?: string }) => {
+    mutationFn: async (data: { content?: string; messageType?: string; fileName?: string; fileUrl?: string; fileSize?: string; replyToId?: string }) => {
       return apiRequest('POST', `/api/chat-rooms/${chatId}/messages`, data);
     },
     onSuccess: () => {
       setMessage("");
       setSelectedFiles([]);
+      onCancelReply?.(); // Clear reply state
       queryClient.invalidateQueries({ queryKey: ["/api/chat-rooms", chatId, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/chat-rooms"] });
     },
@@ -51,6 +57,21 @@ export default function MessageInput({ chatId }: MessageInputProps) {
         variant: "destructive",
       });
     },
+  });
+
+  // Typing indicator mutations
+  const setTypingMutation = useMutation({
+    mutationFn: () => apiRequest('POST', `/api/chat-rooms/${chatId}/typing`, {}),
+    onError: () => {
+      // Silent fail for typing indicators
+    }
+  });
+
+  const clearTypingMutation = useMutation({
+    mutationFn: () => apiRequest('DELETE', `/api/chat-rooms/${chatId}/typing`, {}),
+    onError: () => {
+      // Silent fail for typing indicators
+    }
   });
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,16 +100,62 @@ export default function MessageInput({ chatId }: MessageInputProps) {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Typing indicator logic
+  const startTyping = useCallback(() => {
+    if (!isTyping) {
+      setIsTyping(true);
+      setTypingMutation.mutate();
+    }
+    
+    // Reset typing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      clearTypingMutation.mutate();
+    }, 2000);
+  }, [isTyping, setTypingMutation, clearTypingMutation]);
+
+  const stopTyping = useCallback(() => {
+    if (isTyping) {
+      setIsTyping(false);
+      clearTypingMutation.mutate();
+    }
+    
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+  }, [isTyping, clearTypingMutation]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (isTyping) {
+        clearTypingMutation.mutate();
+      }
+    };
+  }, [clearTypingMutation, isTyping]);
+
   const handleSendMessage = () => {
     const textContent = message.trim();
     
     if (!textContent && selectedFiles.length === 0) return;
+
+    // Stop typing indicator when sending
+    stopTyping();
 
     // Send text message if there's content
     if (textContent) {
       sendMessageMutation.mutate({
         content: textContent,
         messageType: 'text',
+        replyToId: replyTo?.id,
       });
     }
 
@@ -101,6 +168,7 @@ export default function MessageInput({ chatId }: MessageInputProps) {
         fileName: file.fileName,
         fileUrl: file.fileUrl,
         fileSize: file.fileSize,
+        replyToId: replyTo?.id,
       });
     });
   };
@@ -113,7 +181,15 @@ export default function MessageInput({ chatId }: MessageInputProps) {
   };
 
   const handleTextareaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(event.target.value);
+    const newValue = event.target.value;
+    setMessage(newValue);
+    
+    // Start typing indicator if there's content
+    if (newValue.trim()) {
+      startTyping();
+    } else {
+      stopTyping();
+    }
     
     // Auto-resize textarea
     const textarea = event.target;
@@ -134,14 +210,40 @@ export default function MessageInput({ chatId }: MessageInputProps) {
   };
 
   return (
-    <div className="bg-white border-t border-gray-200 p-4">
-      <div className="flex items-end space-x-3">
+    <div className="bg-card border-t border-border p-6">
+      {/* Reply preview */}
+      {replyTo && (
+        <div className="mb-4 p-3 bg-muted rounded-lg border border-border">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-2">
+              <Reply className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-card-foreground">
+                Replying to {replyTo.sender.displayName || replyTo.sender.email}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCancelReply}
+              className="text-muted-foreground hover:text-card-foreground p-1"
+              data-testid="button-cancel-reply"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground truncate">
+            {replyTo.content || `${replyTo.messageType === 'image' ? '📷 Image' : '📎 File'}: ${replyTo.fileName}`}
+          </p>
+        </div>
+      )}
+      
+      <div className="flex items-end space-x-4">
         {/* File upload button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
-          className="text-gray-400 hover:text-gray-600 p-2"
+          className="text-muted-foreground hover:text-card-foreground p-3 rounded-lg"
           disabled={uploadFileMutation.isPending}
           data-testid="button-attach-file"
         >
@@ -166,20 +268,20 @@ export default function MessageInput({ chatId }: MessageInputProps) {
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
-            className="resize-none min-h-[44px] max-h-[120px]"
+            className="resize-none min-h-[48px] max-h-[120px] border-input bg-background text-foreground rounded-lg"
             data-testid="input-message"
           />
           
           {/* File preview area */}
           {selectedFiles.length > 0 && (
-            <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-900">Files to send:</span>
+            <div className="mt-3 p-4 bg-muted rounded-lg border border-border">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-card-foreground">Files to send:</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedFiles([])}
-                  className="text-gray-400 hover:text-gray-600 p-1"
+                  className="text-muted-foreground hover:text-card-foreground p-2"
                   data-testid="button-clear-files"
                 >
                   <X className="w-4 h-4" />
@@ -187,21 +289,21 @@ export default function MessageInput({ chatId }: MessageInputProps) {
               </div>
               <div className="space-y-2">
                 {selectedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                    <div className="flex items-center space-x-2 flex-1 min-w-0">
-                      <div className="w-8 h-8 bg-indigo-100 rounded flex items-center justify-center">
-                        <Paperclip className="w-4 h-4 text-indigo-600" />
+                  <div key={index} className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Paperclip className="w-5 h-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{file.fileName}</p>
-                        <p className="text-xs text-gray-500">{formatFileSize(file.fileSize)}</p>
+                        <p className="text-sm font-medium text-card-foreground truncate">{file.fileName}</p>
+                        <p className="text-xs text-muted-foreground">{formatFileSize(file.fileSize)}</p>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => removeFile(index)}
-                      className="text-gray-400 hover:text-gray-600 p-1"
+                      className="text-muted-foreground hover:text-card-foreground p-2"
                       data-testid={`button-remove-file-${index}`}
                     >
                       <X className="w-4 h-4" />
@@ -217,7 +319,7 @@ export default function MessageInput({ chatId }: MessageInputProps) {
         <Button
           onClick={handleSendMessage}
           disabled={(!message.trim() && selectedFiles.length === 0) || sendMessageMutation.isPending}
-          className="bg-primary hover:bg-indigo-700 p-3"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-lg h-12 min-w-12"
           data-testid="button-send"
         >
           <Send className="w-5 h-5" />
@@ -225,15 +327,15 @@ export default function MessageInput({ chatId }: MessageInputProps) {
       </div>
 
       {/* Quick emoji reactions */}
-      <div className="flex items-center space-x-1 mt-2">
-        <button onClick={() => addEmoji('👍')} className="text-gray-400 hover:text-gray-600 p-1 rounded text-lg" data-testid="button-emoji-thumbs-up">👍</button>
-        <button onClick={() => addEmoji('❤️')} className="text-gray-400 hover:text-gray-600 p-1 rounded text-lg" data-testid="button-emoji-heart">❤️</button>
-        <button onClick={() => addEmoji('😊')} className="text-gray-400 hover:text-gray-600 p-1 rounded text-lg" data-testid="button-emoji-smile">😊</button>
-        <button onClick={() => addEmoji('🎉')} className="text-gray-400 hover:text-gray-600 p-1 rounded text-lg" data-testid="button-emoji-party">🎉</button>
+      <div className="flex items-center space-x-2 mt-4">
+        <button onClick={() => addEmoji('👍')} className="text-muted-foreground hover:text-card-foreground p-2 rounded-lg text-lg transition-colors" data-testid="button-emoji-thumbs-up">👍</button>
+        <button onClick={() => addEmoji('❤️')} className="text-muted-foreground hover:text-card-foreground p-2 rounded-lg text-lg transition-colors" data-testid="button-emoji-heart">❤️</button>
+        <button onClick={() => addEmoji('😊')} className="text-muted-foreground hover:text-card-foreground p-2 rounded-lg text-lg transition-colors" data-testid="button-emoji-smile">😊</button>
+        <button onClick={() => addEmoji('🎉')} className="text-muted-foreground hover:text-card-foreground p-2 rounded-lg text-lg transition-colors" data-testid="button-emoji-party">🎉</button>
         <Button
           variant="ghost"
           size="sm"
-          className="text-gray-400 hover:text-gray-600 p-1"
+          className="text-muted-foreground hover:text-card-foreground p-2"
           data-testid="button-emoji-picker"
         >
           <Smile className="w-4 h-4" />

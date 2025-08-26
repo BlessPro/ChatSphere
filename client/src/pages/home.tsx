@@ -67,11 +67,11 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -81,7 +81,7 @@ export default function Home() {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0 transition-transform duration-300 ease-in-out
         fixed md:relative z-50 md:z-auto
-        w-80 h-full
+        w-80 h-full bg-card border-r border-border
       `}>
         <Sidebar
           selectedChatId={selectedChatId}
